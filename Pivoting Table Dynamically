@@ -1,0 +1,13 @@
+CREATE OR REPLACE PROCEDURE p_pivot_function() AS $$
+DECLARE
+row RECORD;
+BEGIN
+SELECT INTO row  LISTAGG(DISTINCT QUOTE_LITERAL(classification),',') within group(order by classification)  as classifications from table_name;
+execute 'DROP TABLE IF EXISTS fz_finance.UHI_data10;';
+execute 'CREATE TABLE new_table_name_to_put_pivoted_data AS SELECT * FROM (SELECT description,classification,amount FROM fz_finance.UHI_data1) PIVOT ( sum(amount)
+FOR classification IN ('||row.classifications||'));';
+END;
+$$
+LANGUAGE plpgsql;
+CALL p_pivot_function();
+SELECT * FROM table_name;
